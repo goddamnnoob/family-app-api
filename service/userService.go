@@ -6,8 +6,14 @@ import (
 )
 
 type UserService interface {
-	GetAllFamilyMemebers() ([]domain.User, *errs.AppError)
+	GetAllFamilyMembers(string) ([]domain.User, *errs.AppError)
 }
 
 type DefaUserService struct {
+	repo domain.UserRepository
+}
+
+func (u DefaUserService) GetAllFamilyMembers(id string) ([]domain.User, *errs.AppError) {
+
+	return u.repo.GetAllFamilyMembers(id)
 }

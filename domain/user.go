@@ -14,5 +14,5 @@ type User struct {
 }
 
 type UserRepository interface {
-	GetAllFamilyMemebers() ([]User, *errs.AppError)
+	GetAllFamilyMembers(string) ([]User, *errs.AppError)
 }

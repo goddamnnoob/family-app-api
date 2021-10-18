@@ -28,7 +28,7 @@ func NewValidationError(message string) *AppError {
 	}
 }
 
-func (a AppError) asMessage() *AppError {
+func (a AppError) AsMessage() *AppError {
 	return &AppError{
 		Message: a.Message,
 	}

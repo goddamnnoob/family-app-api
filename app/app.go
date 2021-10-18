@@ -8,7 +8,7 @@ import (
 
 	"github.com/goddamnnoob/family-app-api/domain"
 	"github.com/goddamnnoob/family-app-api/errs"
-	"github.com/goddamnnoob/notReddit/service"
+	"github.com/goddamnnoob/family-app-api/service"
 	"github.com/julienschmidt/httprouter"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"

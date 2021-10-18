@@ -9,11 +9,15 @@ type UserService interface {
 	GetAllFamilyMembers(string) ([]domain.User, *errs.AppError)
 }
 
-type DefaUserService struct {
+type DefaultUserService struct {
 	repo domain.UserRepository
 }
 
-func (u DefaUserService) GetAllFamilyMembers(id string) ([]domain.User, *errs.AppError) {
+func (u DefaultUserService) GetAllFamilyMembers(id string) ([]domain.User, *errs.AppError) {
 
 	return u.repo.GetAllFamilyMembers(id)
+}
+
+func NewUserService(repository domain.UserRepository) UserService {
+	return DefaultUserService{repository}
 }

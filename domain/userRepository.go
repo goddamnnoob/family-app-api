@@ -1,6 +1,10 @@
 package domain
 
 import (
+	"context"
+	"fmt"
+	"time"
+
 	"github.com/goddamnnoob/family-app-api/errs"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -18,7 +22,12 @@ func (d UserRepositoryDb) GetAllFamilyMembers(id string) ([]User, *errs.AppError
 
 }
 
-func GetAllFamilyMembers(id string) ([]User, *errs.AppError) {
-	users := make([]User, 0)
-	return users, nil
+func (d UserRepositoryDb) CreateUser(u User) (string, *errs.AppError) {
+	usersCollection := d.dbClient.Database("users").Collection("users")
+	ctx, _ := context.WithTimeout(context.Background(), 15*time.Second)
+	result, err := usersCollection.InsertOne(ctx, &u)
+	if err != nil {
+		return "", errs.NewUnexpectedError("DB error")
+	}
+	return fmt.Sprint(result.InsertedID), nil
 }

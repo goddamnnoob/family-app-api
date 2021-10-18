@@ -8,6 +8,7 @@ import (
 
 	"github.com/goddamnnoob/family-app-api/domain"
 	"github.com/goddamnnoob/family-app-api/errs"
+	"github.com/goddamnnoob/family-app-api/logger"
 	"github.com/goddamnnoob/family-app-api/service"
 	"github.com/julienschmidt/httprouter"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -20,6 +21,7 @@ func Start() {
 	uh := UserHandlers{service.NewUserService(domain.NewUserRepository(dbClient))}
 	router.GET("/ping", Ping)
 	router.GET("/getAllFamilyMembers/:userid", uh.getAllFamilyMembers)
+	router.POST("/createUser", uh.CreateUser)
 	log.Fatal(http.ListenAndServe(":8000", router))
 }
 
@@ -32,5 +34,11 @@ func getDbClient() *mongo.Client {
 	if err != nil {
 		errs.NewUnexpectedError("Unable to connect to DB " + err.Error())
 	}
+	err = client.Ping(ctx, nil)
+	if err != nil {
+		errs.NewUnexpectedError("Unable to connect to DB" + err.Error())
+	}
+	logger.Info("DB connected")
+
 	return client
 }

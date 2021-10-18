@@ -19,7 +19,7 @@ func Start() {
 	dbClient := getDbClient()
 	uh := UserHandlers{service.NewUserService(domain.NewUserRepository(dbClient))}
 	router.GET("/ping", Ping)
-	router.GET("/:userid/getAllFamilyMembers", uh.getAllFamilyMembers)
+	router.GET("/getAllFamilyMembers/:userid", uh.getAllFamilyMembers)
 	log.Fatal(http.ListenAndServe(":8000", router))
 }
 

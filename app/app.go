@@ -27,7 +27,7 @@ func Start() {
 
 func getDbClient() *mongo.Client {
 	clientOptions := options.Client().
-		ApplyURI("mongodb+srv://dbUser:lolgowtham@familyapp.zaeth.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
+		ApplyURI("mongodb+srv://dbUser:lolgowtham@familyapp.zaeth.mongodb.net/users?retryWrites=true&w=majority")
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	client, err := mongo.Connect(ctx, clientOptions)
@@ -39,6 +39,5 @@ func getDbClient() *mongo.Client {
 		errs.NewUnexpectedError("Unable to connect to DB" + err.Error())
 	}
 	logger.Info("DB connected")
-
 	return client
 }

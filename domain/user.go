@@ -6,9 +6,9 @@ import (
 )
 
 type User struct {
-	Id              primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
+	Id              primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
 	UserName        string             `bson:"user_name" json:"user_name"`
-	UserId          string             `bson:"user_id" json:"user_id"`
+	UserId          string             `bson:"user_id,omitempty" json:"user_id,omitempty"`
 	UserEmail       string             `bson:"user_email" json:"user_email"`
 	UserPhoneNumber string             `bson:"user_phone_number" json:"user_phone_number"`
 	UserMother      string             `bson:"user_mother" json:"user_mother"`
@@ -20,4 +20,5 @@ type User struct {
 type UserRepository interface {
 	GetAllFamilyMembers(string) ([]User, *errs.AppError)
 	CreateUser(User) (string, *errs.AppError)
+	GetUserByUserId(string) ([]User, *errs.AppError)
 }

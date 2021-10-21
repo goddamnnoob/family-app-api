@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/goddamnnoob/family-app-api/errs"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -17,9 +18,37 @@ func NewUserRepository(dbClient *mongo.Client) UserRepositoryDb {
 	return UserRepositoryDb{dbClient: dbClient}
 }
 
-func (d UserRepositoryDb) GetAllFamilyMembers(id string) ([]User, *errs.AppError) {
-	return make([]User, 0), nil
+func (d UserRepositoryDb) GetAllFamilyMembers(user_id string) ([]User, *errs.AppError) {
+	usersCollection := d.dbClient.Database("users").Collection("users")
+	var users []User
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
 
+	cursor, err := usersCollection.Find(ctx, bson.D{{"user_id", user_id}})
+	if err != nil {
+		return nil, errs.NewUnexpectedError("Error while querying " + err.Error())
+	}
+	err = cursor.All(ctx, &users)
+	if err != nil {
+		return nil, errs.NewUnexpectedError("Error while converting to []User from cursor " + err.Error())
+	}
+	return users, nil
+
+}
+
+func (d UserRepositoryDb) GetUserByUserId(user_id string) ([]User, *errs.AppError) {
+	usersCollection := d.dbClient.Database("users").Collection("users")
+	var users []User
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+
+	cursor, err := usersCollection.Find(ctx, bson.D{{"user_id", user_id}})
+	if err != nil {
+		return nil, errs.NewUnexpectedError("Error while querying " + err.Error())
+	}
+	err = cursor.All(ctx, &users)
+	if err != nil {
+		return nil, errs.NewUnexpectedError("Error while converting to []User from cursor " + err.Error())
+	}
+	return users, nil
 }
 
 func (d UserRepositoryDb) CreateUser(u User) (string, *errs.AppError) {

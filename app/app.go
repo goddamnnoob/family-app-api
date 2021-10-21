@@ -21,6 +21,7 @@ func Start() {
 	uh := UserHandlers{service.NewUserService(domain.NewUserRepository(dbClient))}
 	router.GET("/ping", Ping)
 	router.GET("/getAllFamilyMembers/:userid", uh.getAllFamilyMembers)
+	router.GET("/getUserById/:userid", uh.GetUserByUserId)
 	router.POST("/createUser", uh.CreateUser)
 	log.Fatal(http.ListenAndServe(":8000", router))
 }

@@ -8,6 +8,7 @@ import (
 type UserService interface {
 	GetAllFamilyMembers(string) ([]domain.User, *errs.AppError)
 	CreateUser(domain.User) (string, *errs.AppError)
+	GetUserByUserId(string) ([]domain.User, *errs.AppError)
 }
 
 type DefaultUserService struct {
@@ -20,11 +21,7 @@ func (u DefaultUserService) GetAllFamilyMembers(id string) ([]domain.User, *errs
 }
 
 func (u DefaultUserService) CreateUser(user domain.User) (string, *errs.AppError) {
-	userid, err := u.repo.CreateUser(user)
-	if err != nil {
-		return "0", err
-	}
-	return userid, nil
+	return u.repo.CreateUser(user)
 }
 
 func NewUserService(repository domain.UserRepository) UserService {

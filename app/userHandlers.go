@@ -2,7 +2,6 @@ package app
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/goddamnnoob/family-app-api/domain"
@@ -18,9 +17,9 @@ func (uh UserHandlers) getAllFamilyMembers(w http.ResponseWriter, r *http.Reques
 	userId := p.ByName("userid")
 	users, err := uh.service.GetAllFamilyMembers(userId)
 	if err != nil {
-		fmt.Fprintf(w, err.AsMessage().Message)
+		writeResponse(w, err.Code, err.Message)
 	}
-	json.NewEncoder(w).Encode(users)
+	writeResponse(w, http.StatusAccepted, users)
 }
 
 func (uh UserHandlers) CreateUser(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
@@ -28,7 +27,25 @@ func (uh UserHandlers) CreateUser(w http.ResponseWriter, r *http.Request, p http
 	json.NewDecoder(r.Body).Decode(&user)
 	userid, err := uh.service.CreateUser(user)
 	if err != nil {
-		fmt.Fprintf(w, err.AsMessage().Message)
+		writeResponse(w, err.Code, err.Message)
 	}
-	json.NewEncoder(w).Encode(userid)
+	writeResponse(w, http.StatusAccepted, userid+" Sucessful ")
+}
+
+func (uh UserHandlers) GetUserByUserId(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	userId := p.ByName("userid")
+	users, err := uh.service.GetUserByUserId(userId)
+	if err != nil {
+		writeResponse(w, err.Code, err.Message)
+	}
+	writeResponse(w, http.StatusAccepted, users)
+}
+
+func writeResponse(rw http.ResponseWriter, code int, data interface{}) {
+	rw.Header().Add("Content-Type", "application/json")
+	rw.WriteHeader(code)
+	err := json.NewEncoder(rw).Encode(data)
+	if err != nil {
+		panic(err)
+	}
 }

@@ -15,11 +15,12 @@ type UserHandlers struct {
 
 func (uh UserHandlers) getAllFamilyMembers(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	userId := p.ByName("userid")
-	users, err := uh.service.GetAllFamilyMembers(userId)
-	if err != nil {
-		writeResponse(w, err.Code, err.Message)
+	familyMembers, err := uh.service.GetAllFamilyMembers(userId)
+	if err != nil || familyMembers == nil {
+		writeResponse(w, err.Code, err.AsMessage())
+	} else {
+		writeResponse(w, http.StatusAccepted, familyMembers)
 	}
-	writeResponse(w, http.StatusAccepted, users)
 }
 
 func (uh UserHandlers) CreateUser(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
@@ -34,11 +35,11 @@ func (uh UserHandlers) CreateUser(w http.ResponseWriter, r *http.Request, p http
 
 func (uh UserHandlers) GetUserByUserId(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 	userId := p.ByName("userid")
-	users, err := uh.service.GetUserByUserId(userId)
+	user, err := uh.service.GetUserByUserId(userId)
 	if err != nil {
 		writeResponse(w, err.Code, err.Message)
 	}
-	writeResponse(w, http.StatusAccepted, users)
+	writeResponse(w, http.StatusAccepted, user)
 }
 
 func writeResponse(rw http.ResponseWriter, code int, data interface{}) {

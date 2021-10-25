@@ -34,6 +34,7 @@ func getDbClient() *mongo.Client {
 	client, err := mongo.Connect(ctx, clientOptions)
 	if err != nil {
 		errs.NewUnexpectedError("Unable to connect to DB " + err.Error())
+		panic(err.Error())
 	}
 	err = client.Ping(ctx, nil)
 	if err != nil {

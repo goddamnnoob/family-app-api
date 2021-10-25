@@ -18,24 +18,43 @@ func NewUserRepository(dbClient *mongo.Client) UserRepositoryDb {
 	return UserRepositoryDb{dbClient: dbClient}
 }
 
-func (d UserRepositoryDb) GetAllFamilyMembers(user_id string) ([]User, *errs.AppError) {
-	usersCollection := d.dbClient.Database("users").Collection("users")
-	var users []User
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-
-	cursor, err := usersCollection.Find(ctx, bson.D{{"user_id", user_id}})
+func (d UserRepositoryDb) GetAllFamilyMembers(user_id string) (*FamilyMembers, *errs.AppError) {
+	user, err := d.GetUserByUserId(user_id)
 	if err != nil {
-		return nil, errs.NewUnexpectedError("Error while querying " + err.Error())
+		return nil, errs.NewNotFoundError("User not found")
 	}
-	err = cursor.All(ctx, &users)
+	var familyMembers FamilyMembers
+	familyMembers.Father, err = d.GetUserByUserId(user.UserFather)
 	if err != nil {
-		return nil, errs.NewUnexpectedError("Error while converting to []User from cursor " + err.Error())
+		return nil, errs.NewUnexpectedError("Error while querying UserFather " + err.Message)
 	}
-	return users, nil
+	familyMembers.Mother, err = d.GetUserByUserId(user.UserMother)
+	if err != nil {
+		return nil, errs.NewUnexpectedError("Error while querying UserMother" + err.Message)
+	}
+	var brothers []*User
+	for _, us := range user.UserBrothers {
+		u, e := d.GetUserByUserId(us)
+		if e != nil {
+			//return nil, errs.NewUnexpectedError("Error while querying UserBrothers" + e.Message)
+		}
+		brothers = append(brothers, u)
+	}
+	familyMembers.Brothers = brothers
+	var sisters []*User
+	for _, us := range user.UserBrothers {
+		u, e := d.GetUserByUserId(us)
+		if e != nil {
+			//return nil, errs.NewUnexpectedError("Error while querying UserSisters" + e.Message)
+		}
+		sisters = append(sisters, u)
+	}
+	familyMembers.Sisters = sisters
+	return &familyMembers, nil
 
 }
 
-func (d UserRepositoryDb) GetUserByUserId(user_id string) ([]User, *errs.AppError) {
+func (d UserRepositoryDb) GetUserByUserId(user_id string) (*User, *errs.AppError) {
 	usersCollection := d.dbClient.Database("users").Collection("users")
 	var users []User
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
@@ -48,7 +67,11 @@ func (d UserRepositoryDb) GetUserByUserId(user_id string) ([]User, *errs.AppErro
 	if err != nil {
 		return nil, errs.NewUnexpectedError("Error while converting to []User from cursor " + err.Error())
 	}
-	return users, nil
+
+	if users == nil {
+		return nil, errs.NewNotFoundError("User not found")
+	}
+	return &users[0], nil
 }
 
 func (d UserRepositoryDb) CreateUser(u User) (string, *errs.AppError) {

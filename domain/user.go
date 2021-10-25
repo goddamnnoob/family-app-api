@@ -17,8 +17,15 @@ type User struct {
 	UserSisters     []string           `bson:"user_sisters" json:"user_sisters"`
 }
 
+type FamilyMembers struct {
+	Father   *User   `json:"father,omitempty"`
+	Mother   *User   `json:"mother,omitempty"`
+	Brothers []*User `json:"brothers,omitempty"`
+	Sisters  []*User `json:"sisters,omitempty"`
+}
+
 type UserRepository interface {
-	GetAllFamilyMembers(string) ([]User, *errs.AppError)
+	GetAllFamilyMembers(string) (*FamilyMembers, *errs.AppError)
 	CreateUser(User) (string, *errs.AppError)
-	GetUserByUserId(string) ([]User, *errs.AppError)
+	GetUserByUserId(string) (*User, *errs.AppError)
 }

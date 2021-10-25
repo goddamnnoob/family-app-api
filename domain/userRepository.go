@@ -34,19 +34,13 @@ func (d UserRepositoryDb) GetAllFamilyMembers(user_id string) (*FamilyMembers, *
 	}
 	var brothers []*User
 	for _, us := range user.UserBrothers {
-		u, e := d.GetUserByUserId(us)
-		if e != nil {
-			//return nil, errs.NewUnexpectedError("Error while querying UserBrothers" + e.Message)
-		}
+		u, _ := d.GetUserByUserId(us)
 		brothers = append(brothers, u)
 	}
 	familyMembers.Brothers = brothers
 	var sisters []*User
 	for _, us := range user.UserBrothers {
-		u, e := d.GetUserByUserId(us)
-		if e != nil {
-			//return nil, errs.NewUnexpectedError("Error while querying UserSisters" + e.Message)
-		}
+		u, _ := d.GetUserByUserId(us)
 		sisters = append(sisters, u)
 	}
 	familyMembers.Sisters = sisters
@@ -59,7 +53,7 @@ func (d UserRepositoryDb) GetUserByUserId(user_id string) (*User, *errs.AppError
 	var users []User
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
 
-	cursor, err := usersCollection.Find(ctx, bson.D{{"user_id", user_id}})
+	cursor, err := usersCollection.Find(ctx, bson.D{{"_id", user_id}})
 	if err != nil {
 		return nil, errs.NewUnexpectedError("Error while querying " + err.Error())
 	}
@@ -81,5 +75,6 @@ func (d UserRepositoryDb) CreateUser(u User) (string, *errs.AppError) {
 	if err != nil {
 		return "", errs.NewUnexpectedError("DB error")
 	}
-	return fmt.Sprint(result.InsertedID), nil
+	userId := fmt.Sprint(result.InsertedID)[10:34]
+	return userId, nil
 }

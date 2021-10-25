@@ -30,7 +30,7 @@ func (uh UserHandlers) CreateUser(w http.ResponseWriter, r *http.Request, p http
 	if err != nil {
 		writeResponse(w, err.Code, err.Message)
 	}
-	writeResponse(w, http.StatusAccepted, userid+" Sucessful ")
+	writeResponse(w, http.StatusAccepted, userid)
 }
 
 func (uh UserHandlers) GetUserByUserId(w http.ResponseWriter, r *http.Request, p httprouter.Params) {

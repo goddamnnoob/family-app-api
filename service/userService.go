@@ -16,7 +16,6 @@ type DefaultUserService struct {
 }
 
 func (u DefaultUserService) GetAllFamilyMembers(id string) (*domain.FamilyMembers, *errs.AppError) {
-
 	return u.repo.GetAllFamilyMembers(id)
 }
 

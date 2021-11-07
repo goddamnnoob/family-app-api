@@ -28,7 +28,7 @@ func Start() {
 
 func getDbClient() *mongo.Client {
 	clientOptions := options.Client().
-		ApplyURI("mongodb+srv://dbUser:lolgowtham@familyapp.zaeth.mongodb.net/users?retryWrites=true&w=majority")
+		ApplyURI("mongodb+srv://dbUser:lolgowtham@familyapp.zaeth.mongodb.net/users?retryWrites=true&w=majority") // access restricted by ip
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	client, err := mongo.Connect(ctx, clientOptions)

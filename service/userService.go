@@ -3,6 +3,7 @@ package service
 import (
 	"github.com/goddamnnoob/family-app-api/domain"
 	"github.com/goddamnnoob/family-app-api/errs"
+	"github.com/google/uuid"
 )
 
 type UserService interface {
@@ -20,6 +21,7 @@ func (u DefaultUserService) GetAllFamilyMembers(id string) (*domain.FamilyMember
 }
 
 func (u DefaultUserService) CreateUser(user domain.User) (string, *errs.AppError) {
+	user.UserId = uuid.New().String()
 	return u.repo.CreateUser(user)
 }
 

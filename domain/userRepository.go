@@ -2,7 +2,6 @@ package domain
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/goddamnnoob/family-app-api/errs"
@@ -53,7 +52,7 @@ func (d UserRepositoryDb) GetUserByUserId(user_id string) (*User, *errs.AppError
 	var users []User
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
 
-	cursor, err := usersCollection.Find(ctx, bson.D{{"_id", user_id}})
+	cursor, err := usersCollection.Find(ctx, bson.D{{"user_id", user_id}})
 	if err != nil {
 		return nil, errs.NewUnexpectedError("Error while querying " + err.Error())
 	}
@@ -71,10 +70,10 @@ func (d UserRepositoryDb) GetUserByUserId(user_id string) (*User, *errs.AppError
 func (d UserRepositoryDb) CreateUser(u User) (string, *errs.AppError) {
 	usersCollection := d.dbClient.Database("users").Collection("users")
 	ctx, _ := context.WithTimeout(context.Background(), 15*time.Second)
-	result, err := usersCollection.InsertOne(ctx, &u)
+	_, err := usersCollection.InsertOne(ctx, &u)
 	if err != nil {
 		return "", errs.NewUnexpectedError("DB error")
 	}
-	userId := fmt.Sprint(result.InsertedID)[10:34]
+	userId := u.UserId
 	return userId, nil
 }

@@ -54,7 +54,7 @@ func (d UserRepositoryDb) GetUserByUserId(user_id string) (*User, *errs.AppError
 
 	cursor, err := usersCollection.Find(ctx, bson.D{{"user_id", user_id}})
 	if err != nil {
-		return nil, errs.NewUnexpectedError("Error while querying " + err.Error())
+		return nil, errs.NewUnexpectedError("Error while querying db" + err.Error())
 	}
 	err = cursor.All(ctx, &users)
 	if err != nil {
@@ -76,4 +76,23 @@ func (d UserRepositoryDb) CreateUser(u User) (string, *errs.AppError) {
 	}
 	userId := u.UserId
 	return userId, nil
+}
+
+func (d UserRepositoryDb) SearchUser(key string, value string) ([]*User, *errs.AppError) {
+	var users []*User
+	usersCollection := d.dbClient.Database("users").Collection("users")
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	search := bson.D{{"$search", bson.D{{"text", bson.D{{"path", key}, {"query", value}}}}}}
+	cursor, err := usersCollection.Aggregate(ctx, mongo.Pipeline{search})
+	if err != nil {
+		return nil, errs.NewUnexpectedError("Error while querying db" + err.Error())
+	}
+	err = cursor.All(ctx, &users)
+	if err != nil {
+		return nil, errs.NewUnexpectedError("Error while converting to []User from cursor" + err.Error())
+	}
+	if users == nil {
+		return nil, errs.NewUserNotFoundError("Search user not found")
+	}
+	return users, nil
 }

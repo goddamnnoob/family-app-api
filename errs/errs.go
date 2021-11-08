@@ -3,7 +3,7 @@ package errs
 import "net/http"
 
 type AppError struct {
-	Code    int    `json:",omitempty"`
+	Code    int    `json:" ,omitempty"`
 	Message string `json:"message"`
 }
 
@@ -25,6 +25,13 @@ func NewValidationError(message string) *AppError {
 	return &AppError{
 		Message: message,
 		Code:    http.StatusUnprocessableEntity,
+	}
+}
+
+func NewUserNotFoundError(message string) *AppError {
+	return &AppError{
+		Message: message,
+		Code:    http.StatusOK,
 	}
 }
 

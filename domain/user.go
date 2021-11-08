@@ -30,4 +30,5 @@ type UserRepository interface {
 	GetAllFamilyMembers(string) (*FamilyMembers, *errs.AppError)
 	CreateUser(User) (string, *errs.AppError)
 	GetUserByUserId(string) (*User, *errs.AppError)
+	SearchUser(string, string) ([]*User, *errs.AppError)
 }

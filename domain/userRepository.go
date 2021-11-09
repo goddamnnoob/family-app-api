@@ -31,6 +31,10 @@ func (d UserRepositoryDb) GetAllFamilyMembers(user_id string) (*FamilyMembers, *
 	if err != nil {
 		return nil, errs.NewUnexpectedError("Error while querying UserMother" + err.Message)
 	}
+	familyMembers.Partner, err = d.GetUserByUserId(user.UserPartner)
+	if err != nil {
+		return nil, errs.NewUnexpectedError("Error while querying UserPartner" + err.Message)
+	}
 	var brothers []*User
 	for _, us := range user.UserBrothers {
 		u, _ := d.GetUserByUserId(us)
@@ -43,6 +47,12 @@ func (d UserRepositoryDb) GetAllFamilyMembers(user_id string) (*FamilyMembers, *
 		sisters = append(sisters, u)
 	}
 	familyMembers.Sisters = sisters
+	var sibilings []*User
+	for _, us := range user.UserBrothers {
+		u, _ := d.GetUserByUserId(us)
+		sibilings = append(sibilings, u)
+	}
+	familyMembers.Sibilings = sibilings
 	return &familyMembers, nil
 
 }
@@ -96,3 +106,10 @@ func (d UserRepositoryDb) SearchUser(key string, value string) ([]*User, *errs.A
 	}
 	return users, nil
 }
+
+/*func (d UserRepositoryDb) FindRelationship(start string, end string) ([]*User, *errs.AppError) {
+	var users []*User
+	usersCollection := d.dbClient.Database("users").Collection("users")
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	pipeline := bson.D{{}}
+} */

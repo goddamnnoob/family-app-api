@@ -14,16 +14,20 @@ type User struct {
 	UserPhoneNumber string             `bson:"user_phone_number" json:"user_phone_number"`
 	UserMother      string             `bson:"user_mother" json:"user_mother"`
 	UserFather      string             `bson:"user_father" json:"user_father"`
+	UserPartner     string             `bson:"user_partner" json:"user_partner"`
 	UserBrothers    []string           `bson:"user_brothers" json:"user_brothers"`
 	UserSisters     []string           `bson:"user_sisters" json:"user_sisters"`
+	UserSibilings   []string           `bson:"user_sibilings" json:"user_sibilings"`
 	UserLocation    string             `bson:"user_location" json:"user_location"`
 }
 
 type FamilyMembers struct {
-	Father   *User   `json:"father,omitempty"`
-	Mother   *User   `json:"mother,omitempty"`
-	Brothers []*User `json:"brothers,omitempty"`
-	Sisters  []*User `json:"sisters,omitempty"`
+	Father    *User   `json:"user_father,omitempty"`
+	Mother    *User   `json:"user_mother,omitempty"`
+	Partner   *User   `json:"user_partner,omitempty"`
+	Brothers  []*User `json:"user_brothers,omitempty"`
+	Sisters   []*User `json:"user_sisters,omitempty"`
+	Sibilings []*User `json:"user_sibilings,omitempty"`
 }
 
 type UserRepository interface {

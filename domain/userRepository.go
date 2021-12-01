@@ -107,9 +107,32 @@ func (d UserRepositoryDb) SearchUser(key string, value string) ([]*User, *errs.A
 	return users, nil
 }
 
-/*func (d UserRepositoryDb) FindRelationship(start string, end string) ([]*User, *errs.AppError) {
+/*func (d UserRepositoryDb) FindRelationship() ([]*User, *errs.AppError) {
 	var users []*User
 	usersCollection := d.dbClient.Database("users").Collection("users")
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-	pipeline := bson.D{{}}
-} */
+	pipeline := bson.D{{"$graphlookup", bson.D{{"from", "users"}, {"startWith", "$user_mother"}, {"connectFromField", "user_"}, {"connectToField", "user_id"}, {"as", "user"}, {"maxDepth", "3"}}}}
+	cursor, err := usersCollection.Aggregate(ctx, mongo.Pipeline{pipeline})
+	if err != nil {
+		return nil, errs.NewUnexpectedError("Error while querying db " + err.Error())
+	}
+	err = cursor.All(ctx, &users)
+	if err != nil {
+		return nil, errs.NewUnexpectedError("Error while converting to []User from cursor " + err.Error())
+	}
+	if users == nil {
+		return nil, errs.NewUserNotFoundError("Search user not found")
+	}
+	return users, nil
+}
+Graphlookup not available for free tier
+*/
+
+func (d UserRepositoryDb) FindRelationship() ([]*User, *errs.AppError) {
+	var stack Stack
+	var users []*User
+
+	return users, nil
+}
+
+//func (d UserRepositoryDb) UpdateUser()

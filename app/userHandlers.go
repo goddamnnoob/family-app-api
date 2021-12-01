@@ -52,6 +52,14 @@ func (uh UserHandlers) SearchUser(w http.ResponseWriter, r *http.Request, p http
 	writeResponse(w, http.StatusOK, users)
 }
 
+func (uh UserHandlers) FindRelationship(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+	users, err := uh.service.FindRelationship()
+	if err != nil {
+		writeResponse(w, err.Code, err.AsMessage())
+	}
+	writeResponse(w, http.StatusAccepted, users)
+}
+
 func writeResponse(rw http.ResponseWriter, code int, data interface{}) {
 	rw.Header().Add("Content-Type", "application/json")
 	rw.WriteHeader(code)

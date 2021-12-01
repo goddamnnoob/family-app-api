@@ -24,6 +24,7 @@ func Start() {
 	router.GET("/getUserById/:userid", uh.GetUserByUserId)
 	router.POST("/createUser", uh.CreateUser)
 	router.GET("/searchUser", uh.SearchUser)
+	router.GET("/findRelationship", uh.FindRelationship)
 	log.Fatal(http.ListenAndServe(":8000", router))
 }
 

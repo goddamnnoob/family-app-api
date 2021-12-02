@@ -128,10 +128,39 @@ func (d UserRepositoryDb) SearchUser(key string, value string) ([]*User, *errs.A
 Graphlookup not available for free tier
 */
 
-func (d UserRepositoryDb) FindRelationship() ([]*User, *errs.AppError) {
+func (d UserRepositoryDb) FindRelationship(userId string) ([]*User, *errs.AppError) {
 	var stack Stack
 	var users []*User
-
+	var err *errs.AppError
+	stack.push(userId)
+	for !stack.isEmpty() {
+		var t string
+		var familyMembers *FamilyMembers
+		var userIds []string
+		t, _ = stack.pop()
+		familyMembers, err = d.GetAllFamilyMembers(t)
+		if familyMembers.Father != nil {
+			userIds = append(userIds, familyMembers.Father.UserId)
+		}
+		if familyMembers.Mother != nil {
+			userIds = append(userIds, familyMembers.Father.UserId)
+		}
+		if familyMembers.Brothers != nil {
+			for _, u := range familyMembers.Brothers {
+				userIds = append(userIds, u.UserId)
+			}
+		}
+		if familyMembers.Sisters != nil {
+			for _, u := range familyMembers.Sisters {
+				userIds = append(userIds, u.UserId)
+			}
+		}
+		if familyMembers.Sibilings != nil {
+			for _, u := range familyMembers.Sibilings {
+				userIds = append(userIds, u.UserId)
+			}
+		}
+	}
 	return users, nil
 }
 

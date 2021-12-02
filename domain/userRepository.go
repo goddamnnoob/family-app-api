@@ -128,11 +128,11 @@ func (d UserRepositoryDb) SearchUser(key string, value string) ([]*User, *errs.A
 Graphlookup not available for free tier
 */
 
-func (d UserRepositoryDb) FindRelationship(userId string) ([]*User, *errs.AppError) {
+func (d UserRepositoryDb) FindRelationship(start string, end string) ([]*User, *errs.AppError) {
 	var stack Stack
 	var users []*User
 	var err *errs.AppError
-	stack.push(userId)
+	stack.push(start)
 	for !stack.isEmpty() {
 		var t string
 		var familyMembers *FamilyMembers

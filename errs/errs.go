@@ -1,6 +1,8 @@
 package errs
 
-import "net/http"
+import (
+	"net/http"
+)
 
 type AppError struct {
 	Code    int    `json:"code ,omitempty"`
@@ -29,6 +31,13 @@ func NewValidationError(message string) *AppError {
 }
 
 func NewUserNotFoundError(message string) *AppError {
+	return &AppError{
+		Message: message,
+		Code:    http.StatusOK,
+	}
+}
+
+func NewRelationshipNotFoundError(message string) *AppError {
 	return &AppError{
 		Message: message,
 		Code:    http.StatusOK,

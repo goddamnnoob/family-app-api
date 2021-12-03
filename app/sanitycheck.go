@@ -8,5 +8,5 @@ import (
 )
 
 func Ping(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	fmt.Fprintf(w, "Pong")
+	fmt.Fprintf(w, "Pong 🐶")
 }

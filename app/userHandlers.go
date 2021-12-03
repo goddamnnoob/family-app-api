@@ -29,8 +29,9 @@ func (uh UserHandlers) CreateUser(w http.ResponseWriter, r *http.Request, p http
 	userid, err := uh.service.CreateUser(user)
 	if err != nil {
 		writeResponse(w, err.Code, err.AsMessage())
+	} else {
+		writeResponse(w, http.StatusOK, userid)
 	}
-	writeResponse(w, http.StatusOK, userid)
 }
 
 func (uh UserHandlers) GetUserByUserId(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
@@ -38,8 +39,9 @@ func (uh UserHandlers) GetUserByUserId(w http.ResponseWriter, r *http.Request, p
 	user, err := uh.service.GetUserByUserId(userId)
 	if err != nil {
 		writeResponse(w, err.Code, err.AsMessage())
+	} else {
+		writeResponse(w, http.StatusOK, user)
 	}
-	writeResponse(w, http.StatusOK, user)
 }
 
 func (uh UserHandlers) SearchUser(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
@@ -48,16 +50,20 @@ func (uh UserHandlers) SearchUser(w http.ResponseWriter, r *http.Request, p http
 	users, err := uh.service.SearchUser(key, searchText)
 	if err != nil {
 		writeResponse(w, err.Code, err.AsMessage())
+	} else {
+		writeResponse(w, http.StatusOK, users)
 	}
-	writeResponse(w, http.StatusOK, users)
 }
 
 func (uh UserHandlers) FindRelationship(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-	users, err := uh.service.FindRelationship()
+	start := r.URL.Query()["start"][0]
+	end := r.URL.Query()["end"][0]
+	users, err := uh.service.FindRelationship(start, end)
 	if err != nil {
 		writeResponse(w, err.Code, err.AsMessage())
+	} else {
+		writeResponse(w, http.StatusOK, users)
 	}
-	writeResponse(w, http.StatusAccepted, users)
 }
 
 func writeResponse(rw http.ResponseWriter, code int, data interface{}) {

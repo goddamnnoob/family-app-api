@@ -23,18 +23,11 @@ func (d UserRepositoryDb) GetAllFamilyMembers(user_id string) (*FamilyMembers, *
 		return nil, errs.NewNotFoundError("User not found")
 	}
 	var familyMembers FamilyMembers
-	familyMembers.Father, err = d.GetUserByUserId(user.UserFather)
-	if err != nil {
-		return nil, errs.NewUnexpectedError("Error while querying UserFather " + err.Message)
-	}
-	familyMembers.Mother, err = d.GetUserByUserId(user.UserMother)
-	if err != nil {
-		return nil, errs.NewUnexpectedError("Error while querying UserMother" + err.Message)
-	}
-	familyMembers.Partner, err = d.GetUserByUserId(user.UserPartner)
-	if err != nil {
-		return nil, errs.NewUnexpectedError("Error while querying UserPartner" + err.Message)
-	}
+	familyMembers.Father, _ = d.GetUserByUserId(user.UserFather)
+
+	familyMembers.Mother, _ = d.GetUserByUserId(user.UserMother)
+
+	familyMembers.Partner, _ = d.GetUserByUserId(user.UserPartner)
 	var brothers []*User
 	for _, us := range user.UserBrothers {
 		u, _ := d.GetUserByUserId(us)
@@ -129,39 +122,106 @@ Graphlookup not available for free tier
 */
 
 func (d UserRepositoryDb) FindRelationship(start string, end string) ([]*User, *errs.AppError) {
-	var stack Stack
 	var users []*User
 	var err *errs.AppError
-	stack.push(start)
-	for !stack.isEmpty() {
-		var t string
-		var familyMembers *FamilyMembers
-		var userIds []string
-		t, _ = stack.pop()
-		familyMembers, err = d.GetAllFamilyMembers(t)
-		if familyMembers.Father != nil {
-			userIds = append(userIds, familyMembers.Father.UserId)
+	var isExist bool
+	var helper func(string, string, int32) bool
+	helper = func(s1, s2 string, depth int32) bool {
+		if depth >= 5 {
+			return false
 		}
-		if familyMembers.Mother != nil {
-			userIds = append(userIds, familyMembers.Father.UserId)
+		u, err := d.GetUserByUserId(s1)
+		if err != nil {
+			return false
+		}
+		users = append(users, u)
+		if s1 == s2 {
+			return true
+		}
+		familyMembers, err := d.GetAllFamilyMembers(u.UserId)
+		if err != nil {
+			return false
+		}
+		if familyMembers.Mother != nil && !Contains(users, familyMembers.Mother) {
+			t := helper(familyMembers.Mother.UserId, s2, depth+1)
+			if t {
+				return true
+			} else {
+				users = users[:len(users)-1]
+			}
+		}
+		if familyMembers.Father != nil && !Contains(users, familyMembers.Father) {
+			t := helper(familyMembers.Father.UserId, s2, depth+1)
+			if t {
+				return true
+			} else {
+				users = users[:len(users)-1]
+			}
+		}
+
+		if familyMembers.Partner != nil && !Contains(users, familyMembers.Partner) {
+			t := helper(familyMembers.Partner.UserId, s2, depth+1)
+			if t {
+				return true
+			} else {
+				users = users[:len(users)-1]
+			}
 		}
 		if familyMembers.Brothers != nil {
-			for _, u := range familyMembers.Brothers {
-				userIds = append(userIds, u.UserId)
+			for _, bro := range familyMembers.Brothers {
+				if !Contains(users, bro) {
+					t := helper(bro.UserId, s2, depth+1)
+					if t {
+						return true
+					} else {
+						users = users[:len(users)-1]
+					}
+				}
 			}
 		}
 		if familyMembers.Sisters != nil {
-			for _, u := range familyMembers.Sisters {
-				userIds = append(userIds, u.UserId)
+			for _, sis := range familyMembers.Sisters {
+				if !Contains(users, sis) {
+					t := helper(sis.UserId, s2, depth+1)
+					if t {
+						return true
+					} else {
+						users = users[:len(users)-1]
+					}
+				}
 			}
 		}
 		if familyMembers.Sibilings != nil {
-			for _, u := range familyMembers.Sibilings {
-				userIds = append(userIds, u.UserId)
+			for _, sib := range familyMembers.Sibilings {
+				if !Contains(users, sib) {
+					t := helper(sib.UserId, s2, depth+1)
+					if t {
+						return true
+					} else {
+						users = users[:len(users)-1]
+					}
+				}
 			}
 		}
+		return false
+	}
+	isExist = helper(start, end, 0)
+	if err != nil {
+		return nil, err
+	}
+	if !isExist {
+		return nil, errs.NewRelationshipNotFoundError("Relationship not found")
 	}
 	return users, nil
+}
+
+func Contains(users []*User, user *User) bool {
+	for _, u := range users {
+		if u.UserId == user.UserId {
+			return true
+		}
+	}
+	return false
 }
 
 //func (d UserRepositoryDb) UpdateUser()

@@ -11,7 +11,7 @@ type UserService interface {
 	CreateUser(domain.User) (string, *errs.AppError)
 	GetUserByUserId(string) (*domain.User, *errs.AppError)
 	SearchUser(string, string) ([]*domain.User, *errs.AppError)
-	FindRelationship() ([]*domain.User, *errs.AppError)
+	FindRelationship(string, string) ([]*domain.User, *errs.AppError)
 }
 
 type DefaultUserService struct {
@@ -42,8 +42,8 @@ func (u DefaultUserService) SearchUser(key string, searchText string) ([]*domain
 	return u.repo.SearchUser(key, searchText)
 }
 
-func (u DefaultUserService) FindRelationship() ([]*domain.User, *errs.AppError) {
-	return u.repo.FindRelationship()
+func (u DefaultUserService) FindRelationship(start string, end string) ([]*domain.User, *errs.AppError) {
+	return u.repo.FindRelationship(start, end)
 }
 
 func NewUserService(repository domain.UserRepository) DefaultUserService {

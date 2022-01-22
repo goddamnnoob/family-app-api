@@ -77,6 +77,106 @@ func (d UserRepositoryDb) CreateUser(u User) (string, *errs.AppError) {
 	if err != nil {
 		return "", errs.NewUnexpectedError("DB error")
 	}
+	if len(u.UserFather) > 0 {
+		father, er := d.GetUserByUserId(u.UserFather)
+		if er == nil {
+			var sibilings []string
+			if father.UserSibilings != nil && len(father.UserSibilings) > 0 {
+				if !ContainsString(father.UserSibilings, u.UserId) {
+					sibilings = father.UserSibilings
+				}
+				sibilings = append(sibilings, u.UserId)
+				_, err = usersCollection.ReplaceOne(ctx,
+					bson.M{"user_id": father.UserId},
+					bson.M{"user_sibilings": sibilings},
+				)
+				if err != nil {
+					return "", errs.NewUnexpectedError("DB error while updating father sibiling relationship ")
+				}
+			}
+		}
+	}
+	if len(u.UserMother) > 0 {
+		mother, er := d.GetUserByUserId(u.UserMother)
+		if er == nil {
+			var sibilings []string
+			if mother.UserSibilings != nil && len(mother.UserSibilings) > 0 {
+				if !ContainsString(mother.UserSibilings, u.UserId) {
+					sibilings = mother.UserSibilings
+				}
+				sibilings = append(sibilings, u.UserId)
+				_, err = usersCollection.ReplaceOne(ctx, bson.M{"user_id": mother.UserId}, bson.M{"user_sibilings": sibilings})
+				if err != nil {
+					return "", errs.NewUnexpectedError("DB error while updating mother sibiling relationship " + err.Error())
+				}
+
+			}
+		}
+	}
+	if len(u.UserBrothers) > 0 {
+		for _, brotherId := range u.UserBrothers {
+			brother, er := d.GetUserByUserId(brotherId)
+			if er == nil {
+				if u.UserGender == "m" {
+					var brothers []string
+					if brother.UserBrothers != nil && len(brother.UserBrothers) > 0 {
+						if !ContainsString(brother.UserBrothers, u.UserId) {
+							brothers = brother.UserBrothers
+						}
+						brothers = append(brothers, u.UserId)
+						_, err = usersCollection.ReplaceOne(ctx, bson.M{"user_id": brother.UserId}, bson.M{"user_brothers": brothers})
+						if err != nil {
+							return "", errs.NewUnexpectedError("DB error while updating brother brother relationship" + err.Error())
+						}
+					}
+				} else if u.UserGender == "f" {
+					var sisters []string
+					if brother.UserSisters != nil && len(brother.UserSisters) > 0 {
+						if !ContainsString(brother.UserSisters, u.UserId) {
+							sisters = brother.UserSisters
+						}
+						sisters = append(sisters, u.UserId)
+						_, err = usersCollection.ReplaceOne(ctx, bson.M{"user_id": brother.UserId}, bson.M{"user_sisters": sisters})
+						if err != nil {
+							return "", errs.NewUnexpectedError("DB error while updating brother sister relationship" + err.Error())
+						}
+					}
+				}
+			}
+		}
+	}
+	if len(u.UserSisters) > 0 {
+		for _, sisterId := range u.UserSisters {
+			sister, er := d.GetUserByUserId(sisterId)
+			if er == nil {
+				if u.UserGender == "m" {
+					var brothers []string
+					if sister.UserBrothers != nil && len(sister.UserBrothers) > 0 {
+						if !ContainsString(sister.UserBrothers, u.UserId) {
+							brothers = sister.UserBrothers
+						}
+						brothers = append(brothers, u.UserId)
+						_, err = usersCollection.ReplaceOne(ctx, bson.M{"user_id": sister.UserId}, bson.M{"user_brothers": brothers})
+						if err != nil {
+							return "", errs.NewUnexpectedError("DB error while updating sister brother relationship" + err.Error())
+						}
+					}
+				} else if u.UserGender == "f" {
+					var sisters []string
+					if sister.UserSisters != nil && len(sister.UserSisters) > 0 {
+						if !ContainsString(sister.UserSisters, u.UserId) {
+							sisters = sister.UserSisters
+						}
+						sisters = append(sisters, u.UserId)
+						_, err = usersCollection.ReplaceOne(ctx, bson.M{"user_id": sister.UserId}, bson.M{"user_sisters": sisters})
+						if err != nil {
+							return "", errs.NewUnexpectedError("DB error while updating sister sister relationship " + err.Error())
+						}
+					}
+				}
+			}
+		}
+	}
 	userId := u.UserId
 	return userId, nil
 }
@@ -142,7 +242,7 @@ func (d UserRepositoryDb) FindRelationship(start string, end string) ([]*User, *
 		if err != nil {
 			return false
 		}
-		if familyMembers.Mother != nil && !Contains(users, familyMembers.Mother) {
+		if familyMembers.Mother != nil && !ContainsUser(users, familyMembers.Mother) {
 			t := helper(familyMembers.Mother.UserId, s2, depth+1)
 			if t {
 				return true
@@ -150,7 +250,7 @@ func (d UserRepositoryDb) FindRelationship(start string, end string) ([]*User, *
 				users = users[:len(users)-1]
 			}
 		}
-		if familyMembers.Father != nil && !Contains(users, familyMembers.Father) {
+		if familyMembers.Father != nil && !ContainsUser(users, familyMembers.Father) {
 			t := helper(familyMembers.Father.UserId, s2, depth+1)
 			if t {
 				return true
@@ -159,7 +259,7 @@ func (d UserRepositoryDb) FindRelationship(start string, end string) ([]*User, *
 			}
 		}
 
-		if familyMembers.Partner != nil && !Contains(users, familyMembers.Partner) {
+		if familyMembers.Partner != nil && !ContainsUser(users, familyMembers.Partner) {
 			t := helper(familyMembers.Partner.UserId, s2, depth+1)
 			if t {
 				return true
@@ -169,7 +269,7 @@ func (d UserRepositoryDb) FindRelationship(start string, end string) ([]*User, *
 		}
 		if familyMembers.Brothers != nil {
 			for _, bro := range familyMembers.Brothers {
-				if !Contains(users, bro) {
+				if !ContainsUser(users, bro) {
 					t := helper(bro.UserId, s2, depth+1)
 					if t {
 						return true
@@ -181,7 +281,7 @@ func (d UserRepositoryDb) FindRelationship(start string, end string) ([]*User, *
 		}
 		if familyMembers.Sisters != nil {
 			for _, sis := range familyMembers.Sisters {
-				if !Contains(users, sis) {
+				if !ContainsUser(users, sis) {
 					t := helper(sis.UserId, s2, depth+1)
 					if t {
 						return true
@@ -193,7 +293,7 @@ func (d UserRepositoryDb) FindRelationship(start string, end string) ([]*User, *
 		}
 		if familyMembers.Sibilings != nil {
 			for _, sib := range familyMembers.Sibilings {
-				if !Contains(users, sib) {
+				if !ContainsUser(users, sib) {
 					t := helper(sib.UserId, s2, depth+1)
 					if t {
 						return true
@@ -215,9 +315,18 @@ func (d UserRepositoryDb) FindRelationship(start string, end string) ([]*User, *
 	return users, nil
 }
 
-func Contains(users []*User, user *User) bool {
+func ContainsUser(users []*User, user *User) bool {
 	for _, u := range users {
 		if u.UserId == user.UserId {
+			return true
+		}
+	}
+	return false
+}
+
+func ContainsString(strings []string, str string) bool {
+	for _, s := range strings {
+		if s == str {
 			return true
 		}
 	}

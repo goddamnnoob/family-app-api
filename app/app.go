@@ -29,8 +29,9 @@ func Start() {
 }
 
 func getDbClient() *mongo.Client {
-	clientOptions := options.Client().
-		ApplyURI("mongodb+srv://dbUser:lolgowtham@familyapp.zaeth.mongodb.net/users?retryWrites=true&w=majority") // access restricted by ip
+	clientOptions := options.Client().ApplyURI("mongodb://127.0.0.1:27017/") // onprem community version
+	//ApplyURI("mongodb+srv://dbUser:lolgowtham@familyapp.zaeth.mongodb.net/users?retryWrites=true&w=majority") // access restricted by ip
+	//Above one is atlas cloud version
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	client, err := mongo.Connect(ctx, clientOptions)

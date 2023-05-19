@@ -12,6 +12,7 @@ type User struct {
 	UserGender      string             `bson:"user_gender" json:"user_gender"`
 	UserEmail       string             `bson:"user_email" json:"user_email"`
 	UserPhoneNumber string             `bson:"user_phone_number" json:"user_phone_number"`
+	UserPassword    string             `bson:"user_password" json:"user_password"`
 	UserMother      string             `bson:"user_mother" json:"user_mother"`
 	UserFather      string             `bson:"user_father" json:"user_father"`
 	UserPartner     string             `bson:"user_partner" json:"user_partner"`

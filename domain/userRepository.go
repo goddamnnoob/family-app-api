@@ -40,12 +40,12 @@ func (d UserRepositoryDb) GetAllFamilyMembers(user_id string) (*FamilyMembers, *
 		sisters = append(sisters, u)
 	}
 	familyMembers.Sisters = sisters
-	var sibilings []*User
+	var children []*User
 	for _, us := range user.UserBrothers {
 		u, _ := d.GetUserByUserId(us)
-		sibilings = append(sibilings, u)
+		children = append(children, u)
 	}
-	familyMembers.Sibilings = sibilings
+	familyMembers.Children = children
 	return &familyMembers, nil
 
 }
@@ -80,15 +80,15 @@ func (d UserRepositoryDb) CreateUser(u User) (string, *errs.AppError) {
 	if len(u.UserFather) > 0 {
 		father, er := d.GetUserByUserId(u.UserFather)
 		if er == nil {
-			var sibilings []string
-			if father.UserSibilings != nil && len(father.UserSibilings) > 0 {
-				if !ContainsString(father.UserSibilings, u.UserId) {
-					sibilings = father.UserSibilings
+			var children []string
+			if father.UserChildren != nil && len(father.UserChildren) > 0 {
+				if !ContainsString(father.UserChildren, u.UserId) {
+					children = father.UserChildren
 				}
-				sibilings = append(sibilings, u.UserId)
+				children = append(children, u.UserId)
 				_, err = usersCollection.ReplaceOne(ctx,
 					bson.M{"user_id": father.UserId},
-					bson.M{"user_sibilings": sibilings},
+					bson.M{"user_children": children},
 				)
 				if err != nil {
 					return "", errs.NewUnexpectedError("DB error while updating father sibiling relationship ")
@@ -99,13 +99,13 @@ func (d UserRepositoryDb) CreateUser(u User) (string, *errs.AppError) {
 	if len(u.UserMother) > 0 {
 		mother, er := d.GetUserByUserId(u.UserMother)
 		if er == nil {
-			var sibilings []string
-			if mother.UserSibilings != nil && len(mother.UserSibilings) > 0 {
-				if !ContainsString(mother.UserSibilings, u.UserId) {
-					sibilings = mother.UserSibilings
+			var children []string
+			if mother.UserChildren != nil && len(mother.UserChildren) > 0 {
+				if !ContainsString(mother.UserChildren, u.UserId) {
+					children = mother.UserChildren
 				}
-				sibilings = append(sibilings, u.UserId)
-				_, err = usersCollection.ReplaceOne(ctx, bson.M{"user_id": mother.UserId}, bson.M{"user_sibilings": sibilings})
+				children = append(children, u.UserId)
+				_, err = usersCollection.ReplaceOne(ctx, bson.M{"user_id": mother.UserId}, bson.M{"user_children": children})
 				if err != nil {
 					return "", errs.NewUnexpectedError("DB error while updating mother sibiling relationship " + err.Error())
 				}
@@ -291,8 +291,8 @@ func (d UserRepositoryDb) FindRelationship(start string, end string) ([]*User, *
 				}
 			}
 		}
-		if familyMembers.Sibilings != nil {
-			for _, sib := range familyMembers.Sibilings {
+		if familyMembers.Children != nil {
+			for _, sib := range familyMembers.Children {
 				if !ContainsUser(users, sib) {
 					t := helper(sib.UserId, s2, depth+1)
 					if t {
